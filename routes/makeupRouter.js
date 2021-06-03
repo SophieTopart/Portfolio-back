@@ -31,17 +31,17 @@ router.get('/', (req, res) => {
 })
 
 const validationUserInput = (req, res) => {
+  
+}
+
+router.post('/', (req, res) => {
     const { error: validationErrors } = Joi.object({
         product: Joi.string().max(255),
         price: Joi.number().min(0)
     }).validate(req.body, { abortEarly: false })
-
-    if (validationErrors)
-        return res.status(422).json({ errors: validationErrors.details })
-}
-
-router.post('/', (req, res) => {
-    validationUserInput(req, res)
+    if (validationErrors) {
+    return res.status(422).json({ errors: validationErrors.details })
+    } else {
     const { product, price } = req.body
     let sql = 'INSERT INTO makeup(product, price) VALUES (?, ?)'
     connection.promise()
@@ -54,10 +54,17 @@ router.post('/', (req, res) => {
         console.error(err)
         res.status(500).send('Error adding makeup product')
     })
+}
 })
 
 router.put('/:id', (req, res) => {
-    validationUserInput(req, res)
+    const { error: validationErrors } = Joi.object({
+        product: Joi.string().max(255),
+        price: Joi.number().min(0)
+    }).validate(req.body, { abortEarly: false })
+    if (validationErrors) {
+    return res.status(422).json({ errors: validationErrors.details })
+    } else {
     const productId = req.params.id
     let existingProduct = null
     let selectSql = 'SELECT * FROM makeup WHERE id = ?'
@@ -78,6 +85,7 @@ router.put('/:id', (req, res) => {
         res.status(404).send(`Product with id ${productId} not found`)
         else res.status(500).send('Error updating product')
     })
+}
 })
 
 router.delete('/:id', (req, res) => {
