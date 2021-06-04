@@ -30,17 +30,17 @@ router.get('/', (req, res) => {
     })
 })
 
-const validationUserInput = (req, res) => {
-  
-}
-
-router.post('/', (req, res) => {
-    const { error: validationErrors } = Joi.object({
+const validationProduct = (req, res) => {
+    return { error: validationErrors } = Joi.object({
         product: Joi.string().max(255),
         price: Joi.number().min(0)
     }).validate(req.body, { abortEarly: false })
-    if (validationErrors) {
-    return res.status(422).json({ errors: validationErrors.details })
+}
+
+router.post('/', (req, res) => {
+    const validationErrors = validationProduct(req, res)
+    if (validationErrors.error) {
+    return res.status(422).json({ errors: validationErrors.error })
     } else {
     const { product, price } = req.body
     let sql = 'INSERT INTO makeup(product, price) VALUES (?, ?)'
@@ -58,12 +58,9 @@ router.post('/', (req, res) => {
 })
 
 router.put('/:id', (req, res) => {
-    const { error: validationErrors } = Joi.object({
-        product: Joi.string().max(255),
-        price: Joi.number().min(0)
-    }).validate(req.body, { abortEarly: false })
-    if (validationErrors) {
-    return res.status(422).json({ errors: validationErrors.details })
+    const validationErrors = validationProduct(req, res)
+    if (validationErrors.error) {
+    return res.status(422).json({ errors: validationErrors.error })
     } else {
     const productId = req.params.id
     let existingProduct = null
