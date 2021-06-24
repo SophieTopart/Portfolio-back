@@ -1,12 +1,11 @@
-const express = require('express')
-const router = express.Router()
-const connection = require('../conf')
+const homeRouter = require('express').Router()
+const Home = require('../models/home')
 
-router.get('/', (req, res) => {
-    let sql = 'SELECT * FROM makeup'
-    connection.promise().query(sql)
-    .then(([results]) => {
-        res.json(results)
+
+homeRouter.get('/', (req, res) => {
+   Home.findAll()
+    .then((makeup) => {
+        res.json(makeup)
     })
     .catch((err) => {
         console.error(err)
@@ -14,4 +13,4 @@ router.get('/', (req, res) => {
     })
 })
 
-module.exports = router
+module.exports = homeRouter

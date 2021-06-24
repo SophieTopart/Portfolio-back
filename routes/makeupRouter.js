@@ -1,15 +1,13 @@
-const express = require('express')
-const router = express.Router()
+const makeupRouter = require('express').Router()
 const connection = require('../conf')
+const Makeup = require('../models/makeup')
 
 const Joi = require('joi');
 
-router.get('/:id', (req, res) => {
-    const { id } = req.params
-    let sql = 'SELECT * FROM makeup WHERE id = ?'
-    connection.promise().query(sql, [id])
-    .then(([results]) => {
-        res.json(results)
+makeupRouter.get('/:id', (req, res) => {
+  Makeup.findOne(req.params.id)
+    .then((result) => {
+        res.json(result)
     })
     .catch((err) => {
         console.error(err)
@@ -17,11 +15,9 @@ router.get('/:id', (req, res) => {
     })
 })
 
-router.get('/', (req, res) => {
-    const { max_price } = req.query
-    let sql = 'SELECT * FROM makeup WHERE price <= ?'
-    connection.promise().query(sql, [max_price])
-    .then(([results]) => {
+makeupRouter.get('/', (req, res) => {
+   Makeup.findByPrice({filters: req.query})
+    .then((results) => {
         res.json(results)
     })
     .catch((err) => {
@@ -30,25 +26,14 @@ router.get('/', (req, res) => {
     })
 })
 
-const validationProduct = (req, res) => {
-    return { error: validationErrors } = Joi.object({
-        product: Joi.string().max(255),
-        price: Joi.number().min(0)
-    }).validate(req.body, { abortEarly: false })
-}
-
-router.post('/', (req, res) => {
-    const validationErrors = validationProduct(req, res)
-    if (validationErrors.error) {
-    return res.status(422).json({ errors: validationErrors.error })
+makeupRouter.post('/', (req, res) => {
+    const error = Makeup.validate(req.body)
+    if (error) {
+    return res.status(422).json({ validationErrors: error.details })
     } else {
-    const { product, price } = req.body
-    let sql = 'INSERT INTO makeup(product, price) VALUES (?, ?)'
-    connection.promise()
-    .query(sql, [product, price])
-    .then(([result]) => {
-        const createdProduct = { id: result.insertId, product, price }
-        res.json(createdProduct)        
+    Makeup.create(req.body)
+    .then((createdProduct) => {
+        res.status(201).json(createdProduct)        
     })
     .catch((err) => {
         console.error(err)
@@ -57,21 +42,16 @@ router.post('/', (req, res) => {
 }
 })
 
-router.put('/:id', (req, res) => {
-    const validationErrors = validationProduct(req, res)
-    if (validationErrors.error) {
-    return res.status(422).json({ errors: validationErrors.error })
-    } else {
-    const productId = req.params.id
+makeupRouter.put('/:id', (req, res) => {
     let existingProduct = null
-    let selectSql = 'SELECT * FROM makeup WHERE id = ?'
-    let updateSql = 'UPDATE makeup SET ? WHERE id = ?'
-    connection.promise()
-    .query(selectSql, [productId])
-    .then(([results]) => {
-        existingProduct = results[0]
-        if (!existingProduct) return Promise.reject('PRODUCT_NOT_FOUND')
-        return connection.promise().query(updateSql, [req.body, productId])
+    let validationErrors = null
+    Makeup.findOne(req.params.id)
+    .then((makeup) => {
+        existingMakeup = makeup
+        if (!existingMakeup) return Promise.reject('PRODUCT_NOT_FOUND')
+        validationErrors = Makeup.validate(req.body, false)
+        if (validationErrors) return Promise.reject('INVALID_DATA')
+        return Makeup.update(req.params.id, req.body)
     })
     .then(() => {
         res.status(200).json({...existingProduct, ...req.body})
@@ -80,17 +60,17 @@ router.put('/:id', (req, res) => {
         console.error(err)
         if (err === 'PRODUCT_NOT_FOUND')
         res.status(404).send(`Product with id ${productId} not found`)
+        else if (err === 'INVALID_DATA')
+        res.status(422).json({ validationErrors: validationErrors.details})
         else res.status(500).send('Error updating product')
     })
-}
+
 })
 
-router.delete('/:id', (req, res) => {
-    const sql = 'DELETE FROM makeup WHERE id = ?'
-    connection.promise()
-    .query(sql, [req.params.id])
-    .then(([result]) => {
-        if (result.affectedRows) res.status(204).send('Item deleted')
+makeupRouter.delete('/:id', (req, res) => {
+    Makeup.destroy(req.params.id)
+    .then((deleted) => {
+        if (deleted) res.status(200).send('🎉 Item deleted')
         else res.status(404).send('Item not found')
     })
      .catch((err) => {
@@ -100,4 +80,4 @@ router.delete('/:id', (req, res) => {
 })
 
 
-module.exports = router
+module.exports = makeupRouter

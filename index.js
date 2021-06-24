@@ -1,11 +1,9 @@
 const express = require("express")
 const app = express()
+const { setupRoutes } = require('./routes');
 const port = process.env.PORT || 8000
 const connection = require("./conf")
 const morgan = require('morgan')
-
-const homeRouter = require('./routes/homeRouter')
-const makeupRouter = require('./routes/makeupRouter')
 
 app.use(morgan('dev'))
 
@@ -13,8 +11,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 // app.use(cors)
 
-app.use('/', homeRouter)
-app.use('/makeup', makeupRouter)
+setupRoutes(app)
 
 connection.connect((err) => {
     if (err) {
