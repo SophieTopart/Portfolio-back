@@ -1,9 +1,7 @@
-const homeRouter = require('./homeRouter')
-const makeupRouter = require('./makeupRouter')
+const projectsRouter = require('./projectsRouter')
 
 const setupRoutes = (app) => {
-    app.use('/', homeRouter)
-    app.use('/makeup', makeupRouter)
+    app.use('/projects', projectsRouter)
 }
 
 module.exports = {

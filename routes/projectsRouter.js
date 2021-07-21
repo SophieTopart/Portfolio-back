@@ -1,4 +1,19 @@
-const makeupRouter = require('express').Router()
+const projectsRouter = require('express').Router()
+const Projects = require('../models/projects')
+
+
+projectsRouter.get('/', (req, res) => {
+    Projects.findAll()
+    .then((project) => {
+        res.json(project)
+    })
+    .catch((err) => {
+        console.error(err)
+        res.status(500).send('Error retrieving projects')
+    })
+})
+
+/*const makeupRouter = require('express').Router()
 const connection = require('../conf')
 const Makeup = require('../models/makeup')
 
@@ -80,4 +95,6 @@ makeupRouter.delete('/:id', (req, res) => {
 })
 
 
-module.exports = makeupRouter
+module.exports = makeupRouter*/
+
+module.exports = projectsRouter
