@@ -4,15 +4,16 @@ const db = require('../conf')
 const checkAuthFields = require('../middlewares/check-fields')
 
 adminRouter.get('/', (req, res) => {
-    Admin.findAll()
-    .then((user) => {
-        res.json(user)
+  const { username } = req.query;
+  Admin.findMany({ filters: { username } })
+    .then((results) => {
+      res.json(results);
     })
     .catch((err) => {
-        console.error(err)
-        res.status(500).send('Error retrieving users')
-    })
-})
+      console.error(err);
+      res.status(500).send('Error retrieving users from database');
+    });
+});
 
 adminRouter.get('/:id', (req, res) => {
     Admin.findOne(req.params.id)
@@ -25,24 +26,26 @@ adminRouter.get('/:id', (req, res) => {
       })
 })
 
-/*adminRouter.get('/', (req, res) => {
-    Admin.findByUsername({filters: req.query})
-      .then((result) => {
-          res.json(result)
+adminRouter.get('/', (req, res) => {
+  const { username } = req.query
+    Admin.findByUsername({filters: username})
+      .then((results) => {
+          res.json(results)
       })
       .catch((err) => {
           console.error(err)
           res.status(500).send('Error retrieving user')
       })
-})*/
+})
 
-/*adminRouter.post('/', checkAuthFields, (req, res) => {
+/*
+ --- A FAIRE : VERIFIER SI L'USERNAME EXISTE DEJA ---
+adminRouter.post('/', checkAuthFields, (req, res) => {
     const { username, password } = req.body
-    const error = Admin.validate(req.body)
-
     let existingUser = null
     let validationErrors = null
-    Admin.findByUsername(req.params.username)
+
+    Admin.findMany({filters: username})
     .then((user) => {
         existingUser = user
         if (existingUser) return Promise.reject('DUPLICATE_USERNAME')
@@ -73,38 +76,11 @@ adminRouter.get('/:id', (req, res) => {
     .catch((err) => {
         console.error(err)
         if (err === 'DUPLICATE_USERNAME')
-        res.status(404).send(`Username ${req.params.username} already exists`)
+        res.status(404).send(`Username already exists`)
         else if (err === 'INVALID_DATA')
         res.status(422).json({ validationErrors: validationErrors.details})
         else res.status(500).send('Error updating user')
     })
-
-    if (error) {
-    return res.status(422).json({ validationErrors: error.details })
-    } 
-    else {
-        Admin.hashPassword(password).then((hashedPassword) => {
-            console.log(username, password)
-        
-            const newUser = {
-              username,
-              password: hashedPassword
-            }
-        
-            db.query('INSERT INTO admin SET ?', newUser, (err, result) => {
-              if (err) {
-                return res.status(500).json({
-                  errors: [err.message]
-                })
-              }
-              res.status(201).json({
-                id: result.insertId,
-                username,
-                password: hashedPassword
-              })
-            })
-          })
-    }
   })*/
   
 

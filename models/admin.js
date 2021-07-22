@@ -28,12 +28,12 @@ const hashingOptions = {
   };
   
 
-const findAll = () => {
+/*const findAll = () => {
     let sql = 'SELECT * from admin'
     return db
     .query(sql)
     .then(([results]) => results)
-}
+}*/
 
 const findOne = (id) => {
     let sql = 'SELECT * FROM admin WHERE id = ?'
@@ -42,18 +42,17 @@ const findOne = (id) => {
     .then(([results]) => results[0])
 }
 
-/*const findByUsername = ({ filters : { username } }) => {
-    let sql = 'SELECT * FROM admin WHERE username = ?'
+const findMany = ({ filters: {username}}) => {
+    let sql = 'SELECT * FROM admin';
+    const sqlValues = [];
+    if (username){
+      sql += ' WHERE username = ?';
+      sqlValues.push(username)
+    }
     return db
-    .query(sql, [username])
-    .then(([results]) => results)
-}*/
-
-const findByUsername = (username) => {
-    return db
-      .query('SELECT * FROM admin WHERE username = ?', [username])
-      .then(([results]) => results[0]);
-  };
+    .query(sql, sqlValues)
+    .then(([results]) => results);
+}
 
 const update = (id, newAttributes) => {
     let sql = 'UPDATE admin SET ? WHERE id = ?'
@@ -70,9 +69,8 @@ const destroy = (id) => {
 
 module.exports = {
     validate,
-    findAll,
+    findMany,
     findOne,
-    findByUsername,
     update,
     hashPassword,
     verifyPassword,
