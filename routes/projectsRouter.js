@@ -20,7 +20,7 @@ projectsRouter.get('/:id', (req, res) => {
       })
       .catch((err) => {
           console.error(err)
-          res.status(500).send('Error retrieving projects')
+          res.status(500).send('Error retrieving project')
       })
 })
   
