@@ -3,13 +3,13 @@ const Joi = require('joi');
 
 const db = connection.promise();
 
-const validate = (data, forCreation = true) => {
-    const presence = forCreation ? 'required' : 'optional';
+const validate = (data) => {
     return Joi.object({
-        title: Joi.string().max(100).presence(presence),
-        description: Joi.string().presence(presence),
-        github: Joi.string().max(100),
-        deploy: Joi.string().max(100),
+        image: Joi.string().min(0).max(100),
+        title: Joi.string().min(0).max(100).required(),
+        description: Joi.string().min(0).required(),
+        github: Joi.string().min(0).max(100),
+        deploy: Joi.string().min(0).max(100),
     }).validate(data, { abortEarly: false }).error
 }
 
